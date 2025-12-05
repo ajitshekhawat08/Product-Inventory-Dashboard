@@ -71,3 +71,45 @@ setProducts(demo);
 localStorage.setItem(LOCAL_KEY, JSON.stringify(demo));
 }
 }, []);
+// Persist
+useEffect(() => {
+localStorage.setItem(LOCAL_KEY, JSON.stringify(products));
+}, [products]);
+
+
+const skuExists = (sku: string, exceptId?: string | null) => {
+return products.some((p) => p.sku.toLowerCase() === sku.toLowerCase() && p.id !== exceptId);
+};
+
+
+const openAdd = () => {
+setEditingId(null);
+setForm({ name: "", sku: "", price: "", quantity: "", category: "" });
+setErrors({});
+setShowModal(true);
+};
+
+
+const openEdit = (p: Product) => {
+setEditingId(p.id);
+setForm({ name: p.name, sku: p.sku, price: String(p.price), quantity: String(p.quantity), category: p.category });
+setErrors({});
+setShowModal(true);
+};
+
+
+const validate = (): boolean => {
+const e: Record<string, string> = {};
+if (!form.name.trim()) e.name = "Name is required";
+if (!form.sku.trim()) e.sku = "SKU is required";
+if (!form.price.trim()) e.price = "Price is required";
+else if (Number(form.price) <= 0 || isNaN(Number(form.price))) e.price = "Price must be a number > 0";
+if (!form.quantity.trim()) e.quantity = "Quantity is required";
+else if (!Number.isInteger(Number(form.quantity)) || Number(form.quantity) < 0) e.quantity = "Quantity must be an integer >= 0";
+if (!form.category.trim()) e.category = "Category is required";
+if (form.sku && skuExists(form.sku, editingId)) e.sku = "SKU must be unique";
+
+
+setErrors(e);
+return Object.keys(e).length === 0;
+};
